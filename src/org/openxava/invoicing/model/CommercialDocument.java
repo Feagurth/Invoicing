@@ -31,6 +31,8 @@ abstract public class CommercialDocument extends Deleteable {
 	// Definimos el tamaño máximo que tendrá la variable
 	@DefaultValueCalculator(CurrentYearCalculator.class)
 	// Especificamos el sistema de calcula por defecto para la variable
+	@SearchKey
+	// Incluimos esta anotación para hacer de la variable una clave de búsqueda
 	private int year;
 
 	/**
@@ -40,6 +42,8 @@ abstract public class CommercialDocument extends Deleteable {
 	// Definimos el tamaño máximo de la variable
 	@ReadOnly
 	// La variable no puede ser modificada por el usuario
+	@SearchKey
+	// Incluimos esta anotación para hacer de la variable una clave de búsqueda
 	private int number;
 
 	/**

@@ -38,6 +38,8 @@ public class Order extends CommercialDocument {
 	@OnChange(ShowHideCreateInvoiceAction.class)
 	// Define la acción para buscar facturas
 	@SearchAction("Order.searchInvoice")
+	// Define la clase que se usará para buscar facturas al cambiar de campo
+	@OnChangeSearch(OnChangeSearchInvoiceAction.class) 
 	private Invoice invoice;
 
 	/**
