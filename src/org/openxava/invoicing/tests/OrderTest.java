@@ -55,7 +55,7 @@ public class OrderTest extends CommercialDocumentTest {
 		assertValue("invoice.year", "");
 
 		// Pulsamos el botón de buscar factura para pasar a la lista de facturas
-		execute("Reference.search", "keyProperty=invoice.year");
+		execute("Order.searchInvoice", "keyProperty=invoice.number");
 
 		// Almacenamos el año y el número de la primera factura que haya en la
 		// lista
@@ -90,6 +90,7 @@ public class OrderTest extends CommercialDocumentTest {
 		// Restaurar los valores originales
 		setValue("delivered", "false");
 		setValue("invoice.year", "");
+		setValue("invoice.number", "");
 		execute("CRUD.save");
 		assertNoErrors();
 	}
@@ -146,6 +147,7 @@ public class OrderTest extends CommercialDocumentTest {
 
 		// Restauramos el pedido para poder ejecutar la prueba la siguiente vez
 		setValue("invoice.year", "");
+		setValue("invoice.number", "");
 		assertValue("invoice.number", "");
 		assertCollectionRowCount("invoice.details", 0);
 		execute("CRUD.save");
@@ -416,4 +418,120 @@ public class OrderTest extends CommercialDocumentTest {
 		// Desmarcamos la fila
 		uncheckRow(row);
 	}
+
+	/**
+	 * Función que nos permite comprobar la búsqueda de facturas desde los
+	 * pedidos
+	 * 
+	 * @throws Exception
+	 *             Si se produce algún error lanzamos una excepción
+	 */
+	public void testSearchInvoiceFromOrder() throws Exception {
+
+		// Creamos un nuevo registro
+		execute("CRUD.new");
+
+		// Asignamos 1 como el número de cliente
+		setValue("customer.number", "1");
+
+		// Cambiamos de pestaña
+		execute("Sections.change", "activeSection=1");
+
+		// Pulsamos el botón de crear una factura
+		execute("Order.searchInvoice", "keyProperty=invoice.number");
+
+		// Comprobamos que todos las facturas mostradas tienen como número de
+		// cliente 1
+		assertCustomerInList("1");
+
+		// Cancelamos la acción
+		execute("ReferenceSearch.cancel");
+
+		// Pasamos a la sección de datos
+		execute("Sections.change", "activeSection=0");
+
+		// Cambiamos en número de cliente a 2
+		setValue("customer.number", "2");
+
+		// Cambiamos a la pestaña de factura
+		execute("Sections.change", "activeSection=1");
+
+		// Buscamos facturas
+		execute("Order.searchInvoice", "keyProperty=invoice.number");
+
+		// Verificamos que todas los clientes de las facturas tienen el mismo
+		// número
+		assertCustomerInList("2");
+	}
+
+	/**
+	 * Función para comprobar la asignación automática de cliente a una factura
+	 * a través de la selección de un pedido
+	 * 
+	 * @throws Exception
+	 *             Se lanza una excepción si se produce un error
+	 */
+	public void testOnChangeInvoice() throws Exception {
+
+		// Creamos un nuevo pedido
+		execute("CRUD.new");
+
+		// Verificamos que el número de cliente es nulo
+		assertValue("customer.number", "");
+
+		// Pasamos a la seccion de facturas
+		execute("Sections.change", "activeSection=1");
+
+		// Pulsamos el botón de buscar facturas
+		execute("Order.searchInvoice", "keyProperty=invoice.number");
+
+		// Ordenamos la lista resultante por número de cliente
+		execute("List.orderBy", "property=customer.number");
+
+		String customer1Number = getValueInList(0, "customer.number"); // Memoriza..
+
+		// Almacenamos los datos de la primera factura
+		String invoiceYear1 = getValueInList(0, "year");
+		String invoiceNumber1 = getValueInList(0, "number");
+
+		// Volvemos a ordenar por número de cliente
+		execute("List.orderBy", "property=customer.number");
+
+		// Almacenamos los datos de la última factura
+		String customer2Number = getValueInList(0, "customer.number");
+		String customer2Name = getValueInList(0, "customer.name");
+
+		// Nos aseguramos de que las dos facturas no sean la misma
+		assertNotEquals("Debe haber facturas de diferentes clientes",
+				customer1Number, customer2Number);
+
+		// Seleccionamos la primera factura
+		execute("ReferenceSearch.choose", "row=0");
+
+		// Pasamos a la pestaña de datos
+		execute("Sections.change", "activeSection=0");
+
+		// Comprobamos que los datos se han rellenado correctamente
+		assertValue("customer.number", customer2Number);
+		assertValue("customer.name", customer2Name);
+
+		// Cambiamos de sección una vez más
+		execute("Sections.change", "activeSection=1");
+
+		// Tratamos de poner una factura que sea de otro cliente
+		setValue("invoice.year", invoiceYear1);
+		setValue("invoice.number", invoiceNumber1);
+
+		// Comprobamos el mensaje de error
+		assertError("Cliente Nº " + customer1Number + " de la factura "
+				+ invoiceYear1 + "/" + invoiceNumber1
+				+ " no concuerda con el Cliente Nº " + customer2Number
+				+ " del pedido actual");
+
+		// Reiniciamos los datos de la factura
+		assertValue("invoice.year", "");
+		assertValue("invoice.number", "");
+		assertValue("invoice.date", "");
+	}
+
 }

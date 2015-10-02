@@ -34,6 +34,18 @@ public class InvoiceTest extends CommercialDocumentTest {
 		// Vamos al modo de detalle de la primera factura
 		execute("Mode.detailAndFirst");
 
+		// Almacenamos el número de cliente
+		String customerNumber = getValue("customer.number");
+
+		// Borra las lineas de detalle de una factura si las hay
+		deleteDetails();
+
+		// Comprobamos que no hay detalles en la factura
+		assertCollectionRowCount("details", 0);
+
+		// Comprobamos que el monto básico es nulo
+		assertValue("baseAmount", "0,00");
+
 		// Cambiamos a la pestaña 1
 		execute("Sections.change", "activeSection=1");
 
@@ -41,20 +53,23 @@ public class InvoiceTest extends CommercialDocumentTest {
 		assertCollectionRowCount("orders", 0);
 
 		// Pulsamos el botón de añadir nuevos pedidos
-		execute("Collection.add", "viewObject=xava_view_section1_orders");
+		execute("Invoice.addOrders", "viewObject=xava_view_section1_orders");
 
-		// Seleccionamos un pedido que haya sido entregado
-		checkFirstOrderWithDeliveredEquals("Sí");
+		// Añadimos el pedido a la factura
+		execute("AddOrdersToInvoice.add", "row=0");
 
-		// Seleccionamos un pedido que no haya sido entregado
-		checkFirstOrderWithDeliveredEquals("No");
+		// Verificamos que todos los pedidos en la lista tienen el mismo cliente
+		assertCustomerInList(customerNumber);
 
-		// Tratamos de añadir los dos
-		execute("AddToCollection.add");
+		// Comprobamos que el valor de la columna envío sea sí para todas las
+		// filas
+		assertValueForAllRows(5, "Sí");
 
-		// Comprobamos que surga un error al intentar añadir un pedido no
-		// entregado
-		assertError("¡ERROR! 1 elemento(s) NO añadido(s) a Pedidos de Factura");
+		// Tomamos nota del importe base del primer pedido de la lista
+		String firstOrderBaseAmount = getValueInList(0, 8);
+
+		// Almacenamos el número de pedidos que tenemos en la lista
+		int ordersRowCount = getListRowCount();
 
 		// Comprobamos que tenemos un mensaje de elemento añadido correctamente
 		// por el pedido entregado
@@ -63,6 +78,28 @@ public class InvoiceTest extends CommercialDocumentTest {
 		// Comprobamos que tenemos una linea nueva del pedido que acabamos de
 		// añador
 		assertCollectionRowCount("orders", 1);
+
+		// Cambiamos de sección
+		execute("Sections.change", "activeSection=0");
+
+		// Comprobamos que se han copiado los detalles
+		assertCollectionNotEmpty("details");
+
+		// Volvemos a la sección en la que estabamos inicialmente
+		execute("Sections.change", "activeSection=1");
+
+		// Verificamos que el importe base de la factura y la almacenada son
+		// iguales
+		assertValue("baseAmount", firstOrderBaseAmount);
+
+		// Mostramos la lista de pedidos de nuevo
+		execute("Invoice.addOrders", "viewObject=xava_view_section1_orders");
+
+		// Verificamos que la lista de pedidos tiene un elemento menos
+		assertListRowCount(ordersRowCount - 1);
+
+		// Cancelamos para cerrar la lista de pedidos
+		execute("AddToCollection.cancel");
 
 		// Marcamos el pedido que acabamos de añadir
 		checkRowCollection("orders", 0);
@@ -76,18 +113,25 @@ public class InvoiceTest extends CommercialDocumentTest {
 		assertCollectionRowCount("orders", 0);
 	}
 
-	private void checkFirstOrderWithDeliveredEquals(String value)
-			throws Exception {
-		int c = getListRowCount(); // El total de filas visualizadas en la lista
-		for (int i = 0; i < c; i++) {
-			if (value.equals(getValueInList(i, 2))) // 2 es la columna
-													// 'delivered'
-			{
-				checkRow(i);
-				return;
-			}
-		}
-		fail("Must be at least one row with delivered=" + value);
-	}
+	/**
+	 * Funcion para eliminar los detalles de una factura
+	 * 
+	 * @throws Exception
+	 *             Si se produce un error se lanza una excepción
+	 */
+	private void deleteDetails() throws Exception {
 
+		// Recuperamos el número de lineas de detalle
+		int c = getCollectionRowCount("details");
+
+		// Iteramos por todas las filas de detalle
+		for (int i = 0; i < c; i++) {
+			// Vamos marcando las filas
+			checkRowCollection("details", i);
+		}
+
+		// Borramos las filas marcadas
+		execute("Collection.removeSelected",
+				"viewObject=xava_view_section0_details");
+	}
 }

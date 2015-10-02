@@ -579,4 +579,52 @@ abstract public class CommercialDocumentTest extends ModuleTestBase {
 		return -1;
 	}
 
+	/**
+	 * Función que nos permite verificar si un cliente está en una lista
+	 * 
+	 * @param customerNumber
+	 *            El número de cliente a comprobar
+	 * @throws Exception
+	 *             Si se produce un error se lanza una excepción
+	 */
+	protected void assertCustomerInList(String customerNumber) throws Exception {
+
+		// Llamamos a una función específica para realizar la validación
+		assertValueForAllRows(3, customerNumber);
+
+	}
+
+	/**
+	 * Función que nos permite verificar si todas las lineas de una lista tienen
+	 * el mismo valor para una columna específica
+	 * 
+	 * @param column
+	 *            Posición de la columna cuyo valor se quiere verificar
+	 * @param value
+	 *            El valor que hay que verificar
+	 * @throws Exception
+	 *             Si se produce algún error se lanza una excepción
+	 */
+	protected void assertValueForAllRows(int column, String value)
+			throws Exception {
+
+		// Nos aseguramos de que lista no está vacía
+		assertListNotEmpty();
+
+		// Almacenamos la cantidad de filas que tiene la lista
+		int c = getListRowCount();
+
+		// Iteramos por todas las filas
+		for (int i = 0; i < c; i++) {
+
+			// Verificamos que todas las filas tienen el mismo valor para la
+			// columna especificada como parámetro
+			if (!value.equals(getValueInList(i, column))) {
+				// Si el valor no es el esperado se produce un error
+				fail("La columna " + column + " de la fila " + i
+						+ "no contiene el valor" + value);
+			}
+		}
+	}
+
 }
