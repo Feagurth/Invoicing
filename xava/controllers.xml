@@ -67,6 +67,16 @@
 		<action name="addOrders"
 			class="org.openxava.invoicing.actions.GoAddOrdersToInvoiceAction"
 			hidden="true" image="images/create_new.gif" />
+
+		<action name="upload" mode="detail"
+			class="org.openxava.invoicing.actions.UploadFile" image="images/up.gif"
+			keystroke="Control U" />
+			
+		<action name="download" mode="detail"
+			class="org.openxava.invoicing.actions.DownloadFile" image="images/down.gif"
+			keystroke="Control W" />
+
+
 	</controller>
 
 
@@ -85,17 +95,6 @@
 
 		<action name="save" mode="detail" class="org.openxava.actions.SaveAction"
 			image="images/save.gif" keystroke="Control S" />
-	</controller>
-
-	<controller name="Invoice">
-		<extends controller="Invoicing" />
-
-		<action name="upload" mode="detail"
-			class="org.openxava.invoicing.actions.UploadFile" image="images/up.gif"
-			keystroke="Control U" />
-		<action name="download" mode="detail"
-			class="org.openxava.invoicing.actions.DownloadFile" image="images/down.gif"
-			keystroke="Control W" />
 	</controller>
 
 </controllers>

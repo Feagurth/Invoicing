@@ -24,8 +24,11 @@ import org.openxava.validators.*;
 		@View(name = "NoCustomerNoInvoice", members = "year, number, date;"
 				+ "details;" + "remarks") })
 @Tabs({
-// Definimos la condición para la muestra de pedidos en el listado
-		@Tab(baseCondition = "deleted = false"),
+// Definimos la condición para la muestra de pedidos en el listado, así como los
+// datos que van a mostrarse en las columnas
+		@Tab(baseCondition = "deleted = false", properties = "year, number, date, customer.number, customer.name, "
+				+ "delivered, vatPercentage, estimatedProfit, baseAmount, "
+				+ "vat, totalAmount, amount, remarks"),
 		// Definimos una tabla con nombre para mostrar la papelera de pedidos
 		@Tab(name = "Deleted", baseCondition = "deleted = true") })
 public class Order extends CommercialDocument {
@@ -39,7 +42,7 @@ public class Order extends CommercialDocument {
 	// Define la acción para buscar facturas
 	@SearchAction("Order.searchInvoice")
 	// Define la clase que se usará para buscar facturas al cambiar de campo
-	@OnChangeSearch(OnChangeSearchInvoiceAction.class) 
+	@OnChangeSearch(OnChangeSearchInvoiceAction.class)
 	private Invoice invoice;
 
 	/**
@@ -243,6 +246,16 @@ public class Order extends CommercialDocument {
 		} catch (Exception ex) {
 			throw new SystemException("impossible_copy_details_to_invoice", ex);
 		}
+	}
+
+	/**
+	 * Función que nos permite copiar los detalles de un pedido a una factura
+	 */
+	public void copyDetailsToInvoice() {
+
+		// Hacemos uso de la función anterior recuperando la factura del propio
+		// pedido
+		copyDetailsToInvoice(getInvoice());
 	}
 
 	/**

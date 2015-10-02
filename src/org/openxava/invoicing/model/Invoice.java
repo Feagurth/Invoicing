@@ -38,6 +38,7 @@ public class Invoice extends CommercialDocument {
 	@OneToMany(mappedBy = "invoice")
 	@CollectionView("NoCustomerNoInvoice")
 	// Define nuestra propia acción para añadir pedidos
+	@NewAction("Invoice.addOrders")
 	private Collection<Order> orders;
 
 	/**
